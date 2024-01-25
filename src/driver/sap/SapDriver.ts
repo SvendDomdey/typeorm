@@ -289,14 +289,8 @@ export class SapDriver implements Driver {
 
         const { logger } = this.connection
 
-        const poolErrorHandler =
-            options.poolErrorHandler ||
-            ((error: any) =>
-                logger.log("warn", `SAP Hana pool raised an error. ${error}`))
-        this.client.eventEmitter.on("poolError", poolErrorHandler)
-
-        // create the pool
-        this.master = this.client.createPool(dbParams, options)
+        this.master = this.hanaClient.createConnection()
+        this.master.connect(this.options)
 
         if (!this.database || !this.schema) {
             const queryRunner = await this.createQueryRunner("master")
@@ -693,7 +687,7 @@ export class SapDriver implements Driver {
             throw new TypeORMError("Driver not Connected")
         }
 
-        return this.master.getConnection()
+        return this.master
     }
 
     /**
