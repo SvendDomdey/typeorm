@@ -30,7 +30,8 @@ import { SapQueryRunner } from "./SapQueryRunner"
 /**
  * Organizes communication with SAP Hana DBMS.
  *
- * todo: looks like there is no built in support for connection pooling, we need to figure out something
+ * TODO: Offer only implicit connection pooling for now.
+ * @see https://help.sap.com/docs/SAP_HANA_CLIENT/f1b440ded6144a54ada97ff95dac7adf/a96853882b1a41019ce33b76968f237a.html
  */
 export class SapDriver implements Driver {
     // -------------------------------------------------------------------------
@@ -43,12 +44,7 @@ export class SapDriver implements Driver {
     connection: DataSource
 
     /**
-     * Hana Pool instance.
-     */
-    client: any
-
-    /**
-     * Hana Client instance.
+     * Hana Client Lib instance.
      */
     hanaClient: any
 
@@ -266,31 +262,8 @@ export class SapDriver implements Driver {
         if (this.options.cert) dbParams.cert = this.options.cert
         if (this.options.ca) dbParams.ca = this.options.ca
 
-        // pool options
-        const options: any = {
-            min:
-                this.options.pool && this.options.pool.min
-                    ? this.options.pool.min
-                    : 1,
-            max:
-                this.options.pool && this.options.pool.max
-                    ? this.options.pool.max
-                    : 10,
-        }
-
-        if (this.options.pool && this.options.pool.checkInterval)
-            options.checkInterval = this.options.pool.checkInterval
-        if (this.options.pool && this.options.pool.maxWaitingRequests)
-            options.maxWaitingRequests = this.options.pool.maxWaitingRequests
-        if (this.options.pool && this.options.pool.requestTimeout)
-            options.requestTimeout = this.options.pool.requestTimeout
-        if (this.options.pool && this.options.pool.idleTimeout)
-            options.idleTimeout = this.options.pool.idleTimeout
-
-        const { logger } = this.connection
-
-        this.master = this.hanaClient.createConnection()
-        this.master.connect(this.options)
+        this.master = this.hanaClient.createClient(this.options)()
+        this.master.connect()
 
         if (!this.database || !this.schema) {
             const queryRunner = await this.createQueryRunner("master")
