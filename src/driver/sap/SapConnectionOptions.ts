@@ -24,12 +24,6 @@ export interface SapConnectionOptions
     readonly driver?: any
 
     /**
-     * The driver objects
-     * This defaults to require("@sap/hana-client")
-     */
-    readonly hanaClientDriver?: any
-
-    /**
      * Pool options.
      */
     readonly pool?: {

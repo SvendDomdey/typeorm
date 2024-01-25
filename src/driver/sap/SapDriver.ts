@@ -12,20 +12,20 @@ import { TypeORMError } from "../../error/TypeORMError"
 import { ColumnMetadata } from "../../metadata/ColumnMetadata"
 import { PlatformTools } from "../../platform/PlatformTools"
 import { RdbmsSchemaBuilder } from "../../schema-builder/RdbmsSchemaBuilder"
+import { View } from "../../schema-builder/view/View"
 import { ApplyValueTransformers } from "../../util/ApplyValueTransformers"
 import { DateUtils } from "../../util/DateUtils"
+import { InstanceChecker } from "../../util/InstanceChecker"
 import { OrmUtils } from "../../util/OrmUtils"
 import { Driver } from "../Driver"
+import { DriverUtils } from "../DriverUtils"
 import { CteCapabilities } from "../types/CteCapabilities"
 import { DataTypeDefaults } from "../types/DataTypeDefaults"
 import { MappedColumnTypes } from "../types/MappedColumnTypes"
+import { ReplicationMode } from "../types/ReplicationMode"
+import { UpsertType } from "../types/UpsertType"
 import { SapConnectionOptions } from "./SapConnectionOptions"
 import { SapQueryRunner } from "./SapQueryRunner"
-import { ReplicationMode } from "../types/ReplicationMode"
-import { DriverUtils } from "../DriverUtils"
-import { View } from "../../schema-builder/view/View"
-import { InstanceChecker } from "../../util/InstanceChecker"
-import { UpsertType } from "../types/UpsertType"
 
 /**
  * Organizes communication with SAP Hana DBMS.
@@ -46,6 +46,11 @@ export class SapDriver implements Driver {
      * Hana Pool instance.
      */
     client: any
+
+    /**
+     * Hana Client instance.
+     */
+    hanaClient: any
 
     /**
      * Hana Client streaming extension.
@@ -820,20 +825,10 @@ export class SapDriver implements Driver {
      */
     protected loadDependencies(): void {
         try {
-            const client = this.options.driver || PlatformTools.load("hdb-pool")
-            this.client = client
-        } catch (e) {
-            // todo: better error for browser env
-            throw new DriverPackageNotInstalledError("SAP Hana", "hdb-pool")
-        }
-
-        try {
-            if (!this.options.hanaClientDriver) {
-                PlatformTools.load("@sap/hana-client")
-                this.streamClient = PlatformTools.load(
-                    "@sap/hana-client/extension/Stream",
-                )
-            }
+            this.hanaClient = PlatformTools.load("@sap/hana-client")
+            this.streamClient = PlatformTools.load(
+                "@sap/hana-client/extension/Stream",
+            )
         } catch (e) {
             // todo: better error for browser env
             throw new DriverPackageNotInstalledError(
