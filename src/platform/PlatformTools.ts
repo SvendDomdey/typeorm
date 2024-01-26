@@ -1,11 +1,11 @@
-import * as path from "path"
-import * as fs from "fs"
-import dotenv from "dotenv"
 import chalk from "chalk"
 import { highlight, Theme } from "cli-highlight"
+import dotenv from "dotenv"
+import * as fs from "fs"
+import * as path from "path"
 
-export { ReadStream } from "fs"
 export { EventEmitter } from "events"
+export { ReadStream } from "fs"
 export { Readable, Writable } from "stream"
 
 /**
@@ -56,9 +56,6 @@ export class PlatformTools {
 
                 case "@sap/hana-client/extension/Stream":
                     return require("@sap/hana-client/extension/Stream")
-
-                case "hdb-pool":
-                    return require("hdb-pool")
 
                 /**
                  * mysql
